@@ -1,6 +1,9 @@
-#include <iostream>
+#include "redis_tool.h"
+using namespace stc;
 
 int main() {
-    std::cout << "Hello, World!" << std::endl;
+    RedisTool redis;
+    redis.setString("3", "4");
+    printf("%s", redis.getString("3").c_str());
     return 0;
 }
