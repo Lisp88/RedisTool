@@ -11,7 +11,10 @@
 
 #include "hiredis/hiredis.h"
 #include "string.h"
+#include "list"
 using std::string;
+using std::list;
+
 
 namespace stc{
     class RedisTool{
@@ -19,10 +22,15 @@ namespace stc{
         RedisTool();
         ~RedisTool();
 
+        bool isExiist(const string& key);
+        void delKey(const string& key);
         //string
         bool setString(const string& key, const string& val);
-        string getString(const string& key);
-
+        bool getString(const string& key, string& val);//传出参数val，返回值是否存在
+        //list
+        bool setList(const string& key, const list<string>& val_list);
+        bool appendList(const string& key, const string& val);
+        bool getList(const string& key, list<string>& val_list);
     private:
         void init();
 

@@ -59,20 +59,21 @@ bool RedisTool::setString(const string& key, const string& val) {
     return flag;
 }
 
-string RedisTool::getString(const string& key) {
-    string str_res;
+bool RedisTool::getString(const string& key, string& val) {
     if(!m_redis || m_redis->err){
         printf("redis init error");
         init();
-        return str_res;
+        return false;
     }
+    bool flag = false;
     //请求
     redisReply * reply;
     reply = static_cast<redisReply *>(redisCommand(m_redis, "get %s", key.c_str()));
     //校验返回值
     if(reply){
         if(reply->len > 0){
-            str_res = reply->str;
+            val = reply->str;
+            flag = true;
         }
     }else {
         redisFree(m_redis);
@@ -81,5 +82,133 @@ string RedisTool::getString(const string& key) {
     }
     //回收返回值
     freeReplyObject(reply);
-    return str_res;
+    return flag;
+}
+
+bool RedisTool::isExiist(const string &key) {
+    if(!m_redis || m_redis->err){
+        printf("redis init error");
+        init();
+        return false;
+    }
+    bool flag = false;
+    //请求
+    redisReply * reply;
+    reply = static_cast<redisReply *>(redisCommand(m_redis, "get %s", key.c_str()));
+    //校验返回值
+    if(reply){
+        if(reply->len > 0){
+            flag = true;
+        }
+    }else {
+        redisFree(m_redis);
+        m_redis = nullptr;
+        printf("get string error >> reply = null\n");
+    }
+    //回收返回值
+    freeReplyObject(reply);
+    return flag;
+}
+
+void RedisTool::delKey(const string &key) {
+    if(!m_redis || m_redis->err){
+        printf("redis init error");
+        init();
+        return;
+    }
+    //请求
+    redisReply * reply;
+    reply = static_cast<redisReply *>(redisCommand(m_redis, "del %s", key.c_str()));
+    //校验返回值
+    if(reply){
+    }else {
+        redisFree(m_redis);
+        m_redis = nullptr;
+        printf("del key error >> reply = null\n");
+    }
+    //回收返回值
+    freeReplyObject(reply);
+}
+
+bool RedisTool::setList(const string &key, const list<string> &val) {
+    if(!m_redis || m_redis->err){
+        printf("redis init error");
+        init();
+        return false;
+    }
+    //请求
+    redisReply * reply;
+    delKey(key);
+    int count = 0;
+    for(auto it = val.begin(); it != val.end(); ++it){
+        reply = static_cast<redisReply *>(redisCommand(m_redis, "rpush %s %s", key.c_str(), it->c_str()));
+        //校验返回值
+        if(reply){
+            if(reply->integer > 0) {
+                ++count;
+            }
+        }else {
+            redisFree(m_redis);
+            m_redis = nullptr;
+            printf("set list error >> reply = null\n");
+            return false;
+        }
+        //回收返回值
+        freeReplyObject(reply);
+    }
+    if(count == val.size()) return true;
+    return false;
+}
+
+bool RedisTool::appendList(const string &key, const string &val) {
+    if(!m_redis || m_redis->err){
+        printf("redis init error");
+        init();
+        return false;
+    }
+    bool flag = false;
+    //请求
+    redisReply * reply;
+    reply = static_cast<redisReply *>(redisCommand(m_redis, "rpush %s %s", key.c_str(), val.c_str()));
+    //校验返回值
+    if(reply){
+        if(reply->integer > 0) {
+            flag = true;
+        }
+    }else {
+        redisFree(m_redis);
+        m_redis = nullptr;
+        printf("append list error >> reply = null\n");
+    }
+    //回收返回值
+    freeReplyObject(reply);
+    return flag;
+}
+
+bool RedisTool::getList(const string &key, list<string> &val_list) {
+    if(!m_redis || m_redis->err){
+        printf("redis init error");
+        init();
+        return false;
+    }
+    bool flag = false;
+    //请求
+    redisReply * reply;
+    reply = static_cast<redisReply *>(redisCommand(m_redis, "lrange %s 0 -1", key.c_str()));
+    //校验返回值
+    if(reply){
+        if(reply->type == REDIS_REPLY_ARRAY){
+            for(unsigned i = 0; i < reply->elements; ++i){
+                val_list.emplace_back(reply->element[i]->str);
+            }
+            flag = true;
+        }
+    }else {
+        redisFree(m_redis);
+        m_redis = nullptr;
+        printf("set list error >> reply = null\n");
+    }
+    //回收返回值
+    freeReplyObject(reply);
+    return flag;
 }

@@ -3,7 +3,13 @@ using namespace stc;
 
 int main() {
     RedisTool redis;
-    redis.setString("3", "4");
-    printf("%s", redis.getString("3").c_str());
+    list<string> val_list{"sda", "sss", "oso"};
+    list<string> temp;
+    redis.appendList("897", "haha");
+    redis.getList("897", temp);
+
+    for(auto i : temp)
+        printf("%s\n", i.c_str());
+
     return 0;
 }
