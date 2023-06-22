@@ -31,6 +31,11 @@ namespace stc{
         bool setList(const string& key, const list<string>& val_list);
         bool appendList(const string& key, const string& val);
         bool getList(const string& key, list<string>& val_list);
+        //Hash
+        bool setHash(const string& key, const string& field, const string& val);
+        bool getHash(const string& key, const string& field, string& val);
+        bool delHashKey(const string& key, const string& field);
+        bool getHashKey(const string& key, list<string>& field_list);//传出field列表
     private:
         void init();
 
